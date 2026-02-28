@@ -1,0 +1,105 @@
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
+#include <HX711.h>
+const char* ssid = "Xiaomi_03F7";
+const char* password = "tomasguitar10";
+// Используем правильный эндпоинт для весов
+const char* serverName = "http://192.168.31.156:5000/api/weight";
+
+
+// ===== ПОДКЛЮЧЕНИЕ HX711 =====
+// Рекомендуемые пины: D1 = GPIO5, D2 = GPIO4 (менее конфликтные, чем D3/D4)
+// Если используете D3(0)/D4(2) и возникают проблемы, замените на 5 и 4.
+const int LOADCELL_DOUT_PIN = 5;   // D1
+const int LOADCELL_SCK_PIN  = 4;   // D2
+
+HX711 scale;
+
+// Калибровочный коэффициент (подбирается экспериментально)
+float calibration_factor = 20.0; // измените после калибровки
+
+// Переменная для хранения веса
+float weight = 0;
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("\n\n=== Весы для улья ===\n");
+
+  // --- Подключение к Wi-Fi ---
+  WiFi.begin(ssid, password);
+  Serial.print("Подключение к Wi-Fi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWi-Fi подключен. IP: " + WiFi.localIP().toString());
+
+  // --- Инициализация HX711 ---
+  Serial.println("Инициализация HX711...");
+  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+
+  // Ждём готовности чипа (некоторые модули требуют времени)
+  Serial.print("Ожидание HX711");
+  while (!scale.is_ready()) {
+    delay(100);
+    Serial.print(".");
+  }
+  Serial.println(" OK");
+
+  // Устанавливаем калибровочный коэффициент и тарируем (обнуляем)
+  scale.set_scale(calibration_factor);
+  scale.tare(); // снимите нагрузку перед тарировкой!
+  Serial.println("Тарировка выполнена. Вес обнулён.");
+
+  Serial.println("Система готова к работе.\n");
+}
+
+void loop() {
+  // --- Измерение веса ---
+  if (scale.is_ready()) {
+    weight = scale.get_units(10); // усреднение по 10 отсчётам
+    Serial.print("Измеренный вес: ");
+    Serial.print(weight);
+    Serial.println(" g");
+  } else {
+    Serial.println("Ошибка: HX711 не отвечает!");
+    delay(2000);
+    return; // пропускаем отправку
+  }
+
+  // --- Отправка данных на сервер (если есть Wi-Fi) ---
+  if (WiFi.status() == WL_CONNECTED) {
+    WiFiClient client;                 // создаём клиент для TCP
+    HTTPClient http;
+
+    // Формируем JSON
+    String jsonPayload = "{\"weight\":" + String(weight) + "}";
+
+    // Начинаем соединение
+    http.begin(client, serverName);
+    http.addHeader("Content-Type", "application/json");
+
+    // Отправляем POST-запрос
+    int httpResponseCode = http.POST(jsonPayload);
+
+    if (httpResponseCode > 0) {
+      Serial.print("Код ответа сервера: ");
+      Serial.println(httpResponseCode);
+      // Получаем тело ответа (необязательно)
+      String response = http.getString();
+      Serial.println("Ответ: " + response);
+    } else {
+      Serial.print("Ошибка отправки: ");
+      Serial.println(httpResponseCode);
+    }
+
+    http.end(); // закрываем соединение
+  } else {
+    Serial.println("Wi-Fi потерян. Попытка переподключения...");
+    WiFi.reconnect();
+  }
+
+  // Пауза между измерениями (например, 5 минут = 300 000 мс)
+  // Для тестирования можно поставить 10 секунд (10000)
+  delay(10000); // 5 минут
+}
