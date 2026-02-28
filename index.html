@@ -8,11 +8,18 @@
         body {
             font-family: Arial;
             margin: 20px;
+            text-align: center;
         }
 
         #chartContainer {
             width: 80%;
             margin: auto;
+        }
+
+        div {
+            text-align: center;
+            font-size: 23px;
+
         }
     </style>
 </head>
@@ -21,6 +28,11 @@
     <h1>Вес улья за последние 24 часа</h1>
     <div id="chartContainer">
         <canvas id="weightChart"></canvas>
+    </div>
+    <div id="currentWeightContainer">
+        <strong>Текущий вес:</strong> <span id="currentWeight">—</span> г
+        <br>
+        <strong>Время измерения:</strong> <span id="currentTime">—</span>
     </div>
 
     <script>
@@ -38,7 +50,33 @@
             const weights = data.map(d => d.weight_grams);
 
             const ctx = document.getElementById('weightChart').getContext('2d');
+            if (data.length > 0) {
+                const lastEntry = data[data.length - 1];
+                document.getElementById('currentWeight').textContent = lastEntry.weight_grams;
+                document.getElementById('currentTime').textContent = new Date(lastEntry.timestamp).toLocaleString();
+                const lastTimestamp = new Date(lastEntry.timestamp).getTime();
+                const now = Date.now();
+                const maxAgeMs = 10 * 60 * 10; // 10 минут в миллисекундах
+                if (now - lastTimestamp <= maxAgeMs) {
+                // данные актуальны
+                document.getElementById('currentWeight').textContent = lastEntry.weight_grams;
+                document.getElementById('currentTime').textContent = new Date(lastEntry.timestamp).toLocaleString();
+            } else {
+                // данные устарели, датчик вероятно отключен
+                document.getElementById('currentWeight').textContent = '— (нет данных)';
+                document.getElementById('currentTime').textContent = '—';
+            }
 
+
+            } 
+
+
+
+            
+            else {
+                document.getElementById('currentWeight').textContent = '—';
+                document.getElementById('currentTime').textContent = '—';
+            }
             // Если график уже существует, уничтожаем его перед созданием нового
             if (chartInstance) {
                 chartInstance.destroy();
@@ -70,7 +108,7 @@
         renderChart();
 
         // Обновление каждые 60 секунд (реальное значение, например 60000)
-        setInterval(renderChart, 6000);
+        setInterval(renderChart, 60000);
     </script>
 </body>
 

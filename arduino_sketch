@@ -1,8 +1,11 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <HX711.h>
-const char* ssid = "Xiaomi_03F7";
-const char* password = "tomasguitar10";
+// Локальные секреты (не коммитятся): создайте файл secrets.h рядом с этим скетчем
+// по образцу secrets.example.h
+#include "secrets.h"
+const char* ssid = WIFI_SSID;
+const char* password = WIFI_PASSWORD;
 // Используем правильный эндпоинт для весов
 const char* serverName = "http://192.168.31.156:5000/api/weight";
 
