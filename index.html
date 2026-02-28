@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Вес улья</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 20px;
+        }
+
+        #chartContainer {
+            width: 80%;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Вес улья за последние 24 часа</h1>
+    <div id="chartContainer">
+        <canvas id="weightChart"></canvas>
+    </div>
+
+    <script>
+        let chartInstance = null; // переменная для хранения текущего графика
+
+        async function fetchData() {
+            // Добавляем параметр timestamp, чтобы избежать кэширования
+            const response = await fetch('/api/weight/history?hours=24&_=' + Date.now());
+            return await response.json();
+        }
+
+        async function renderChart() {
+            const data = await fetchData();
+            const timestamps = data.map(d => new Date(d.timestamp).toLocaleString());
+            const weights = data.map(d => d.weight_grams);
+
+            const ctx = document.getElementById('weightChart').getContext('2d');
+
+            // Если график уже существует, уничтожаем его перед созданием нового
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: 'Вес (граммы)',
+                        data: weights,
+                        borderColor: 'blue',
+                        backgroundColor: 'rgba(0,255, 255, 0.8)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: { title: { display: true, text: 'Время' } },
+                        y: { title: { display: true, text: 'Вес (г)' } }
+                    }
+                }
+            });
+        }
+
+        // Первоначальная загрузка
+        renderChart();
+
+        // Обновление каждые 60 секунд (реальное значение, например 60000)
+        setInterval(renderChart, 6000);
+    </script>
+</body>
+
+</html>
