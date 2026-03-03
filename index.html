@@ -4,112 +4,32 @@
 <head>
     <title>Вес улья</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            font-family: Arial;
-            margin: 20px;
-            text-align: center;
-        }
+    <link rel="stylesheet" href="/static/style.css">
 
-        #chartContainer {
-            width: 80%;
-            margin: auto;
-        }
-
-        div {
-            text-align: center;
-            font-size: 23px;
-
-        }
-    </style>
+    </link>
 </head>
 
 <body>
-    <h1>Вес улья за последние 24 часа</h1>
+    <h2>Вес улья </h2>
     <div id="chartContainer">
         <canvas id="weightChart"></canvas>
+        
     </div>
+    <div id="chartContainer2">
+        
+        <canvas id="weightChart2"></canvas>
+    </div>
+
+    
     <div id="currentWeightContainer">
         <strong>Текущий вес:</strong> <span id="currentWeight">—</span> г
         <br>
         <strong>Время измерения:</strong> <span id="currentTime">—</span>
     </div>
 
-    <script>
-        let chartInstance = null; // переменная для хранения текущего графика
+    <button id="clearHistoryButton">Очистить историю</button>
 
-        async function fetchData() {
-            // Добавляем параметр timestamp, чтобы избежать кэширования
-            const response = await fetch('/api/weight/history?hours=24&_=' + Date.now());
-            return await response.json();
-        }
-
-        async function renderChart() {
-            const data = await fetchData();
-            const timestamps = data.map(d => new Date(d.timestamp).toLocaleString());
-            const weights = data.map(d => d.weight_grams);
-
-            const ctx = document.getElementById('weightChart').getContext('2d');
-            if (data.length > 0) {
-                const lastEntry = data[data.length - 1];
-                document.getElementById('currentWeight').textContent = lastEntry.weight_grams;
-                document.getElementById('currentTime').textContent = new Date(lastEntry.timestamp).toLocaleString();
-                const lastTimestamp = new Date(lastEntry.timestamp).getTime();
-                const now = Date.now();
-                const maxAgeMs = 10 * 60 * 10; // 10 минут в миллисекундах
-                if (now - lastTimestamp <= maxAgeMs) {
-                // данные актуальны
-                document.getElementById('currentWeight').textContent = lastEntry.weight_grams;
-                document.getElementById('currentTime').textContent = new Date(lastEntry.timestamp).toLocaleString();
-            } else {
-                // данные устарели, датчик вероятно отключен
-                document.getElementById('currentWeight').textContent = '— (нет данных)';
-                document.getElementById('currentTime').textContent = '—';
-            }
-
-
-            } 
-
-
-
-            
-            else {
-                document.getElementById('currentWeight').textContent = '—';
-                document.getElementById('currentTime').textContent = '—';
-            }
-            // Если график уже существует, уничтожаем его перед созданием нового
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
-
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: timestamps,
-                    datasets: [{
-                        label: 'Вес (граммы)',
-                        data: weights,
-                        borderColor: 'blue',
-                        backgroundColor: 'rgba(0,255, 255, 0.8)',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: { title: { display: true, text: 'Время' } },
-                        y: { title: { display: true, text: 'Вес (г)' } }
-                    }
-                }
-            });
-        }
-
-        // Первоначальная загрузка
-        renderChart();
-
-        // Обновление каждые 60 секунд (реальное значение, например 60000)
-        setInterval(renderChart, 60000);
-    </script>
+    <script src="/static/chart.js"></script>
 </body>
 
 </html>

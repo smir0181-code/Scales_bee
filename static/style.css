@@ -1,0 +1,37 @@
+body {
+    font-family: Arial;
+    margin: 10px;
+    text-align: center;
+}
+
+#chartContainer {
+    width: 60%;
+    margin: auto;
+    height: 60%;
+    
+}
+
+div {
+    text-align: center;
+    font-size: 25px;
+
+}
+button{
+    width: 160px;
+    height: 50px;
+    color:red;
+    font-size: 15px;
+    background-color: black;
+    border-radius: 10px;
+    
+    
+
+}
+#chartContainer2 {
+    width: 40%;   /* или процент, например 50% */
+    height: 30%;
+    margin: 0 auto;
+}
+#currentWeightContainer{
+    margin:5px;
+}

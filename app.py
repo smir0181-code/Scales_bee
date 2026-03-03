@@ -47,19 +47,17 @@ def add_weight():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Эндпоинт для получения данных за последние N часов
+# Эндпоинт для получения данных из БД
 @app.route('/api/weight/history', methods=['GET'])
 def get_history():
-    hours = request.args.get('hours', default=24, type=int)
     try:
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
             SELECT timestamp, weight_grams
             FROM weight_measurements
-            WHERE timestamp > NOW() - INTERVAL '%s hours'
             ORDER BY timestamp
-        """, (hours,))
+        """)
         rows = cur.fetchall()
         cur.close()
         conn.close()
@@ -67,10 +65,28 @@ def get_history():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Отдаём HTML страницу
+
+@app.route('/api/weight/history/clear', methods=['POST'])
+def clear_history():
+    """Удалить все записи из таблицы weight_measurements."""
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM weight_measurements")
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'status': 'cleared'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Отдаём HTML страницу и статические файлы
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
+
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
