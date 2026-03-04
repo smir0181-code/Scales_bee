@@ -35,7 +35,7 @@ async function renderChart() {
             document.getElementById('currentTime').textContent = new Date(lastEntry.timestamp).toLocaleString();
 
         }
-        else {color= 'rgba(121, 115, 127, 0.3)'
+        else {color= 'rgba(148, 146, 150, 0.3)'
             // Данные устарели (последнее измерение было слишком давно) – датчик вероятно отключён
             document.getElementById('currentWeight').textContent = '— (нет актуальных данных датчик вероятно отключён)';
             document.getElementById('currentTime').textContent = '—';
@@ -80,7 +80,7 @@ async function renderChart() {
         chartInstance2.destroy();
     }
 
-    // Второй график: столбцы по суткам (одна колонка на дату)
+    // Второй график: столбцы по суткам (одна колонка на дату, максимум за сутки)
     const dailyMap = {};
     for (const point of data) {
         const t = new Date(point.timestamp);
@@ -89,8 +89,12 @@ async function renderChart() {
             String(t.getMonth() + 1).padStart(2, '0') + '-' +
             String(t.getDate()).padStart(2, '0');
 
-        // берём последнее измерение за день (перезаписываем)
-        dailyMap[dateKey] = point.weight_grams;
+        // сохраняем максимальный вес за сутки
+        if (!(dateKey in dailyMap)) {
+            dailyMap[dateKey] = point.weight_grams;
+        } else {
+            dailyMap[dateKey] = Math.max(dailyMap[dateKey], point.weight_grams);
+        }
     }
 
     const dailyLabels = Object.keys(dailyMap).sort();
