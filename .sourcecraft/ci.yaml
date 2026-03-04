@@ -11,7 +11,7 @@ workflows:
       - name: sample-task
         cubes:
           - name: sample-cube1
-            image: cr.yandex/mirror/library/python:3.13.7-slim
+            image: cr.yandex/mirror/library/python:3.13.7
             script:
               - python -m pip install --upgrade pip
               - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
