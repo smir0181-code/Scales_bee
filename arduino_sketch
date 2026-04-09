@@ -19,7 +19,7 @@ const int LOADCELL_SCK_PIN  = 4;   // D2
 HX711 scale;
 
 // Калибровочный коэффициент (подбирается экспериментально)
-float calibration_factor = 20.0; // измените после калибровки
+float calibration_factor = 18.5; // измените после калибровки
 
 // Переменная для хранения веса
 float weight = 0;
