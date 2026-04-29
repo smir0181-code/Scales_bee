@@ -1,4 +1,4 @@
-FROM python:3.13.7
+FROM python:3.13-slim
 
 WORKDIR /app
 
@@ -8,5 +8,4 @@ RUN pip install --upgrade pip && \
 
 COPY . .
 
-# Слушаем все интерфейсы, чтобы хост мог подключиться
-CMD ["waitress-serve", "--host=0.0.0.0", "--port=5000", "main:app"]
+CMD ["sh", "-c", "waitress-serve --host=0.0.0.0 --port=$PORT main:app"]
