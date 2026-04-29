@@ -3,37 +3,36 @@ from flask_cors import CORS
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 
 app = Flask(__name__)
-CORS(app)  # разрешить запросы с других доменов (для локальной разработки)
+CORS(app)
 
-# Параметры подключения к БД
-DB_HOST = os.getenv('DB_HOST', 'amvera-smiranton-cnpg-vesy-bd-rw')          # по умолчанию localhost для разработки
-DB_PORT = os.getenv('DB_PORT', '5432')               # порт тоже можно    параметризовать
-DB_NAME = os.getenv('DB_NAME', 'beehive')
-DB_USER = os.getenv('DB_USER', 'your_user')
-DB_PASSWORD = os.getenv('DB_PASSWORD', 'your_password')
+# Параметры подключения к БД из переменных окружения (обязательно задайте их в Amvera)
+DB_HOST = os.getenv('DB_HOST')
+DB_PORT = os.getenv('DB_PORT')
+DB_NAME = os.getenv('DB_NAME')
+DB_USER = os.getenv('DB_USER')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
 
 def get_db_connection():
-    conn = psycopg2.connect(
+    if not all([DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD]):
+        raise Exception("Database credentials not fully set in environment")
+    return psycopg2.connect(
         host=DB_HOST,
+        port=DB_PORT,
         database=DB_NAME,
         user=DB_USER,
         password=DB_PASSWORD,
         cursor_factory=RealDictCursor
     )
-    return conn
 
-# Эндпоинт для приёма данных от ESP32
 @app.route('/api/weight', methods=['POST'])
 def add_weight():
     data = request.get_json()
     if not data or 'weight' not in data:
         return jsonify({'error': 'No weight provided'}), 400
-
     weight = data['weight']
-    print(weight)
     try:
         conn = get_db_connection()
         cur = conn.cursor()
@@ -46,9 +45,9 @@ def add_weight():
         conn.close()
         return jsonify({'status': 'ok'}), 201
     except Exception as e:
+        app.logger.error(f"DB error: {e}")
         return jsonify({'error': str(e)}), 500
 
-# Эндпоинт для получения данных из БД
 @app.route('/api/weight/history', methods=['GET'])
 def get_history():
     try:
@@ -57,7 +56,7 @@ def get_history():
         cur.execute("""
             SELECT timestamp, weight_grams
             FROM weight_measurements
-            ORDER BY timestamp
+            ORDER BY timestamp DESC
         """)
         rows = cur.fetchall()
         cur.close()
@@ -66,10 +65,8 @@ def get_history():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/api/weight/history/clear', methods=['POST'])
 def clear_history():
-    """Удалить все записи из таблицы weight_measurements."""
     try:
         conn = get_db_connection()
         cur = conn.cursor()
@@ -81,13 +78,13 @@ def clear_history():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Отдаём HTML страницу и статические файлы
 @app.route('/')
 def index():
-    return send_from_directory('.', 'index.html')
-
-
-
+    # Если есть index.html в папке static – отдаём, иначе JSON
+    if os.path.exists('static/index.html'):
+        return send_from_directory('static', 'index.html')
+    return jsonify({'message': 'Scales API is running'})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
