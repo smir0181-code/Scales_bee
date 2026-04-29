@@ -9,7 +9,7 @@ app = Flask(__name__)
 CORS(app)  # разрешить запросы с других доменов (для локальной разработки)
 
 # Параметры подключения к БД
-DB_HOST = os.getenv('DB_HOST',    'amvera-smiranton-cnpg-vesy-bd-rw')          # по умолчанию localhost для разработки
+DB_HOST = os.getenv('DB_HOST', 'amvera-smiranton-cnpg-vesy-bd-rw')          # по умолчанию localhost для разработки
 DB_PORT = os.getenv('DB_PORT', '5432')               # порт тоже можно    параметризовать
 DB_NAME = os.getenv('DB_NAME', 'beehive')
 DB_USER = os.getenv('DB_USER', 'your_user')
