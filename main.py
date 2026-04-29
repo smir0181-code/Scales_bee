@@ -84,7 +84,7 @@ def clear_history():
 # Отдаём HTML страницу и статические файлы
 @app.route('/')
 def index():
-    return send_from_directory('.', 'index.html')
+    return send_from_directory('static', 'index.html')
 
 
 
