@@ -82,21 +82,10 @@ def clear_history():
         return jsonify({'error': str(e)}), 500
 
 # Отдаём HTML страницу и статические файлы
-# @app.route('/')
-# def index():
-#     return send_from_directory('static', 'index.html')
 @app.route('/')
 def index():
-    return '''
-    <!DOCTYPE html>
-    <html>
-    <head><title>Тест Amvera</title></head>
-    <body>
-        <h1>✅ Flask работает</h1>
-        <p>Если вы это видите, значит приложение запущено и отвечает на запросы.</p>
-    </body>
-    </html>
-    '''
+    return send_from_directory('static', 'index.html')
+
 
 
 
