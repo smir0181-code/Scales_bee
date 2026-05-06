@@ -6,6 +6,9 @@ import os
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
+@app.route('/debug')
+def debug():
+    return "Flask is alive!"
 CORS(app)  # разрешить запросы с других доменов (для локальной разработки)
 
 # Параметры подключения к БД
