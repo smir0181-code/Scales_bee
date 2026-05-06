@@ -11,22 +11,22 @@ def debug():
     return "Flask is alive!"
 CORS(app)  # разрешить запросы с других доменов (для локальной разработки)
 
-# Параметры подключения к БД
-DB_HOST = os.getenv('DB_HOST', 'localhost')          # по умолчанию localhost для разработки
-DB_PORT = os.getenv('DB_PORT', '5432')               # порт тоже можно    параметризовать
-DB_NAME = os.getenv('DB_NAME', 'beehive')
-DB_USER = os.getenv('DB_USER', 'your_user')
-DB_PASSWORD = os.getenv('DB_PASSWORD', 'your_password')
+# # Параметры подключения к БД
+# DB_HOST = os.getenv('DB_HOST', 'localhost')          # по умолчанию localhost для разработки
+# DB_PORT = os.getenv('DB_PORT', '5432')               # порт тоже можно    параметризовать
+# DB_NAME = os.getenv('DB_NAME', 'beehive')
+# DB_USER = os.getenv('DB_USER', 'your_user')
+# DB_PASSWORD = os.getenv('DB_PASSWORD', 'your_password')
 
-def get_db_connection():
-    conn = psycopg2.connect(
-        host=DB_HOST,
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        cursor_factory=RealDictCursor
-    )
-    return conn
+# def get_db_connection():
+#     conn = psycopg2.connect(
+#         host=DB_HOST,
+#         database=DB_NAME,
+#         user=DB_USER,
+#         password=DB_PASSWORD,
+#         cursor_factory=RealDictCursor
+#     )
+#     return conn
 
 # Эндпоинт для приёма данных от ESP32
 @app.route('/api/weight', methods=['POST'])
