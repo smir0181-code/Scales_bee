@@ -90,7 +90,9 @@ def index():
     return send_from_directory('static', 'index.html')
 
 
-
+print("=== Зарегистрированные маршруты ===")
+for rule in app.url_map.iter_rules():
+    print(rule)
 
 
 if __name__ == '__main__':

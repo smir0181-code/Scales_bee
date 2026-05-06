@@ -7,7 +7,7 @@
 const char* ssid = WIFI_SSID;
 const char* password = WIFI_PASSWORD;
 // Используем правильный эндпоинт для весов
-const char* serverName = "http://192.168.31.156:5000/api/weight";
+const char* serverName = "https://vesy-dla-pcel.smiranton.amvera.io/api/weight";
 
 
 // ===== ПОДКЛЮЧЕНИЕ HX711 =====
