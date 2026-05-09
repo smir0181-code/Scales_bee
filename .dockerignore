@@ -6,3 +6,6 @@ venv
 .env
 .sourcecraft
 paf
+init.sql
+.dockerignore
+static

@@ -1,5 +1,0 @@
-CREATE TABLE IF NOT EXISTS weight_measurements (
-    id SERIAL PRIMARY KEY,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    weight_grams FLOAT NOT NULL
-);
