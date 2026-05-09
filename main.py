@@ -90,7 +90,8 @@ def clear_history():
 def index():
     return send_from_directory('static', 'index.html')
 
-
+print("DB_HOST:", os.getenv('DB_HOST'))
+print("DB_USER:", os.getenv('DB_USER'))
 
 
 if __name__ == '__main__':
