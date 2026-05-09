@@ -15,6 +15,10 @@ DB_NAME = os.getenv('DB_NAME', 'beehive')
 DB_USER = os.getenv('DB_USER', 'your_user')
 DB_PASSWORD = os.getenv('DB_PASSWORD', 'your_password')
 
+@app.route('/debug')
+def debug():
+    return "Flask is alive!"
+
 def get_db_connection():
     conn = psycopg2.connect(
         host=DB_HOST,
