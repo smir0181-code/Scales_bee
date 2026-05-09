@@ -8,13 +8,19 @@ def debug():
 
 @app.route('/api/weight', methods=['POST'])
 def add_weight():
-    return jsonify({"status": "ok"}), 200
+    data = request.get_json()
+    if not data or 'weight' not in data:
+        return jsonify({'error': 'No weight'}), 400
+    weight = data['weight']
+    print(f"Weight: {weight}")
+    return jsonify({'status': 'ok', 'received': weight}), 200
+
+@app.route('/')
+def home():
+    return "OK"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-
-
-
 
 
 
