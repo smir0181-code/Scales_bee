@@ -24,10 +24,6 @@ def get_db_connection():
         cursor_factory=RealDictCursor
     )
 
-@app.route('/debug')
-def debug():
-    return "Flask is alive!"
-
 @app.route('/api/weight', methods=['POST'])
 def add_weight():
     data = request.get_json()
@@ -35,7 +31,7 @@ def add_weight():
         return jsonify({'error': 'No weight provided'}), 400
 
     weight = data['weight']
-    battery = data.get('battery')  # может отсутствовать
+    battery = data.get('battery')  # получим процент, если есть
     try:
         conn = get_db_connection()
         cur = conn.cursor()
@@ -87,7 +83,6 @@ def index():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
-
 
 
 
