@@ -1,34 +1,25 @@
 #include <ESP8266WiFi.h>
+#include <WiFiClientSecure.h>
 #include <ESP8266HTTPClient.h>
 #include <HX711.h>
-// Локальные секреты (не коммитятся): создайте файл secrets.h рядом с этим скетчем
-// по образцу secrets.example.h
-#include "secrets.h"
-const char* ssid = WIFI_SSID;
-const char* password = WIFI_PASSWORD;
-// Используем правильный эндпоинт для весов
-const char* serverName = "https://vesy-dla-pcel.smiranton.amvera.io/api/weight";
 
+const char* ssid = "Xiaomi_03F7";
+const char* password = "tomasguitar10";
+const char* serverName = "https://scales-api-smiranton.amvera.io/api/weight";   // ← правильный адрес
 
-// ===== ПОДКЛЮЧЕНИЕ HX711 =====
-// Рекомендуемые пины: D1 = GPIO5, D2 = GPIO4 (менее конфликтные, чем D3/D4)
-// Если используете D3(0)/D4(2) и возникают проблемы, замените на 5 и 4.
-const int LOADCELL_DOUT_PIN = 5;   // D1
-const int LOADCELL_SCK_PIN  = 4;   // D2
+const int LOADCELL_DOUT_PIN = 5;
+const int LOADCELL_SCK_PIN  = 4;
 
 HX711 scale;
-
-// Калибровочный коэффициент (подбирается экспериментально)
-float calibration_factor = 18.5; // измените после калибровки
-
-// Переменная для хранения веса
+float calibration_factor = 18.5;
 float weight = 0;
+
+WiFiClientSecure client;
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("\n\n=== Весы для улья ===\n");
+  Serial.println("\n=== Весы для улья ===\n");
 
-  // --- Подключение к Wi-Fi ---
   WiFi.begin(ssid, password);
   Serial.print("Подключение к Wi-Fi");
   while (WiFi.status() != WL_CONNECTED) {
@@ -37,11 +28,10 @@ void setup() {
   }
   Serial.println("\nWi-Fi подключен. IP: " + WiFi.localIP().toString());
 
-  // --- Инициализация HX711 ---
+  client.setInsecure();   // отключаем проверку сертификата
+
   Serial.println("Инициализация HX711...");
   scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
-
-  // Ждём готовности чипа (некоторые модули требуют времени)
   Serial.print("Ожидание HX711");
   while (!scale.is_ready()) {
     delay(100);
@@ -49,60 +39,42 @@ void setup() {
   }
   Serial.println(" OK");
 
-  // Устанавливаем калибровочный коэффициент и тарируем (обнуляем)
   scale.set_scale(calibration_factor);
-  scale.tare(); // снимите нагрузку перед тарировкой!
-  Serial.println("Тарировка выполнена. Вес обнулён.");
-
-  Serial.println("Система готова к работе.\n");
+  scale.tare();
+  Serial.println("Тарировка выполнена. Вес обнулён.\n");
 }
 
 void loop() {
-  // --- Измерение веса ---
   if (scale.is_ready()) {
-    weight = scale.get_units(10); // усреднение по 10 отсчётам
+    weight = scale.get_units(10);
     Serial.print("Измеренный вес: ");
     Serial.print(weight);
     Serial.println(" g");
   } else {
     Serial.println("Ошибка: HX711 не отвечает!");
     delay(2000);
-    return; // пропускаем отправку
+    return;
   }
 
-  // --- Отправка данных на сервер (если есть Wi-Fi) ---
   if (WiFi.status() == WL_CONNECTED) {
-    WiFiClient client;                 // создаём клиент для TCP
     HTTPClient http;
-
-    // Формируем JSON
     String jsonPayload = "{\"weight\":" + String(weight) + "}";
-
-    // Начинаем соединение
     http.begin(client, serverName);
     http.addHeader("Content-Type", "application/json");
-
-    // Отправляем POST-запрос
-    int httpResponseCode = http.POST(jsonPayload);
-
-    if (httpResponseCode > 0) {
+    int httpCode = http.POST(jsonPayload);
+    if (httpCode > 0) {
       Serial.print("Код ответа сервера: ");
-      Serial.println(httpResponseCode);
-      // Получаем тело ответа (необязательно)
+      Serial.println(httpCode);
       String response = http.getString();
       Serial.println("Ответ: " + response);
     } else {
       Serial.print("Ошибка отправки: ");
-      Serial.println(httpResponseCode);
+      Serial.println(httpCode);
     }
-
-    http.end(); // закрываем соединение
+    http.end();
   } else {
     Serial.println("Wi-Fi потерян. Попытка переподключения...");
     WiFi.reconnect();
   }
-
-  // Пауза между измерениями (например, 5 минут = 300 000 мс)
-  // Для тестирования можно поставить 10 секунд (10000)
-  delay(10000); // 5 минут
+  delay(10000);   // пауза 10 секунд
 }
