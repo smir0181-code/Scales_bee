@@ -15,7 +15,7 @@ async function renderChart() {
     const ctx2 = document.getElementById('weightChart2').getContext('2d');
 
     // Определяем актуальность данных
-    const MAX_AGE_MINUTES = 1;
+    const MAX_AGE_MINUTES = 60;
     const MAX_AGE_MS = MAX_AGE_MINUTES * 60 * 1000;
     let color = 'rgba(18, 0, 210, 0.8)';
 
