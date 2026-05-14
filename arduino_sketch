@@ -3,9 +3,9 @@
 #include <ESP8266HTTPClient.h>
 #include <HX711.h>
 
-const char* ssid = "Xiaomi_03F7";
-const char* password = "tomasguitar10";
-const char* serverName = "https://scales-api-smiranton.amvera.io/api/weight";   // ← правильный адрес
+const char* ssid = "--------";
+const char* password = "--------";
+const char* serverName = "----------";   // ← правильный адрес
 
 const int LOADCELL_DOUT_PIN = 5;
 const int LOADCELL_SCK_PIN  = 4;
