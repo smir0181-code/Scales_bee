@@ -1,4 +1,4 @@
-##include <ESP8266WiFi.h>
+#include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
 #include <ESP8266HTTPClient.h>
 #include <HX711.h>
@@ -7,11 +7,11 @@
 ADC_MODE(ADC_VCC);
 
 // ================= WIFI =================
-const char* ssid = "Xia-------";
-const char* password = "tomas-------";
+const char* ssid = "Xiaomi_-------";
+const char* password = "tomas-----";
 
 // ================= SERVER =================
-const char* serverName = "https://sc-----------/api/weight";
+const char* serverName = "https://scales-api-s-----o/api/weight";
 
 // ================= HX711 =================
 const int LOADCELL_DOUT_PIN = 5; // D1
@@ -32,7 +32,7 @@ const int BOOT_COUNT_ADDR   = 4;    // uint32_t (4 байта)
 
 // ================= SLEEP =================
 // ull минут в 1 цикле
-const uint64_t SLEEP_CYCLE_US = 2ULL * 54ULL * 1000000ULL;
+const uint64_t SLEEP_CYCLE_US = 1ULL * 60ULL * 1000000ULL;
 
 // 3 цикла = 18 минут между отправками
 const uint32_t NEEDED_CYCLES = 6;
@@ -226,6 +226,15 @@ void setup() {
 
   uint32_t bootCount = readBootCount();
   Serial.print("Запомненный bootCount: "); Serial.println(bootCount);
+  // ---- Отправка при первом запуске ----
+  if (bootCount == 0) {
+    Serial.println("Первый запуск – измеряем и отправляем");
+    readBattery();
+    readWeightWithTare();
+    connectWiFi();
+    sendData();
+    bootCount = 1; 
+  }
 
   // ---- Накопление циклов ----
   bootCount++;
@@ -235,7 +244,7 @@ void setup() {
     readWeightWithTare();
     connectWiFi();
     sendData();
-    bootCount = 0;           // сброс счётчика после отправки
+    bootCount = 1;           // сброс счётчика после отправки
   }
 
   // Сохраняем обновлённый счётчик в EEPROM
