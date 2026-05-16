@@ -7,11 +7,11 @@
 ADC_MODE(ADC_VCC);
 
 // ================= WIFI =================
-const char* ssid = "Xiaomi_03F7";
-const char* password = "tomasguitar10";
+const char* ssid = "Xiaomi_0----";
+const char* password = "tomas-----";
 
 // ================= SERVER =================
-const char* serverName = "https://scales-api-smiranton.amvera.io/api/weight";
+const char* serverName = "https://sca-------s-api-ight";
 
 // ================= HX711 =================
 const int LOADCELL_DOUT_PIN = 5; // D1
